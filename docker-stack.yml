@@ -1,34 +1,52 @@
-version: '3'
+version: '3.9'
+
+configs:
+  ecommerce_app_env:
+    file: ./.env
 
 services:
   mysql-db:
-    image: mysql:8
+    image: dexlo/mysql
     container_name: mysql-db-container
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: mypass
+      MYSQL_DATABASE: ecommerce_app_database
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mypass
     volumes:
-        - ./mysql-db/user.sql:/docker-entrypoint-initdb.d/user.sql
+      - ./mysql-db/user.sql:/docker-entrypoint-initdb.d/user.sql
     ports:
       - 3306:3306
     networks:
       - spring-cloud-microservices
+    configs:
+      - source: ecommerce_app_env
+        target: /etc/mysql/conf.d/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
 
   redis-cache:
-    image: redis:alpine
+    image: dexlo/redis
     container_name: redis-cache-container
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass mypass
     ports:
       - 6379:6379
     networks:
       - spring-cloud-microservices
+    configs:
+      - source: ecommerce_app_env
+        target: /usr/local/etc/redis/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
 
   authentication-service:
-    build:
-      context: .
-      dockerfile: ./server/authentication-service/Dockerfile-dev
+    image: dexlo/authentication:mo
     container_name: authentication-service-container
     restart: always
     depends_on:
@@ -37,25 +55,29 @@ services:
       - react-ui
     environment:
       - DB_HOST=mysql-db
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_SCHEMA=${DB_SCHEMA}
-      - ACTIVE_PROFILE=${ACTIVE_PROFILE}
-      - PORT=${AUTHENTICATION_SERVICE_PORT}
-    links:
-      - mysql-db:mysql
+      - DB_PORT=3306
+      - DB_USER=mysqluser
+      - DB_PASS=mypass
+      - DB_SCHEMA=ecommerce_app_database
+      - ACTIVE_PROFILE=dev
+      - PORT=7000
     expose:
       - ${AUTHENTICATION_SERVICE_PORT}
     ports:
-      - ${AUTHENTICATION_SERVICE_PORT}:${AUTHENTICATION_SERVICE_PORT}
+      - 7000:7000
     networks:
       - spring-cloud-microservices
+    configs:
+      - source: ecommerce_app_env
+        target: /app/config/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
 
   common-data-service:
-    build:
-      context: .
-      dockerfile: ./server/common-data-service/Dockerfile-dev
+    image: dexlo/data:mo
     container_name: common-data-service-container
     restart: always
     depends_on:
@@ -64,29 +86,33 @@ services:
       - react-ui
     environment:
       - DB_HOST=mysql-db
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_SCHEMA=${DB_SCHEMA}
-      - ACTIVE_PROFILE=${ACTIVE_PROFILE}
-      - PORT=${COMMON_DATA_SERVICE_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - DB_PORT=3306
+      - DB_USER=mysqluser
+      - DB_PASS=mypass
+      - DB_SCHEMA=ecommerce_app_database
+      - ACTIVE_PROFILE=dev
+      - PORT=9000
+      - REDIS_PASSWORD=mypass
       - REDIS_HOST=redis-cache
-      - REDIS_PORT=${REDIS_PORT}
-      - REACT_CLIENT_URL=${REACT_CLIENT_URL}
-    links:
-      - mysql-db:mysql
+      - REDIS_PORT=6379
+      - REACT_CLIENT_URL=http://localhost:3000
     expose:
       - ${COMMON_DATA_SERVICE_PORT}
     ports:
-      - ${COMMON_DATA_SERVICE_PORT}:${COMMON_DATA_SERVICE_PORT}
+      - 9000:9000
     networks:
       - spring-cloud-microservices
+    configs:
+      - source: ecommerce_app_env
+        target: /app/config/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
   search-suggestion-service:
-    build:
-      context: .
-      dockerfile: ./server/search-suggestion-service/Dockerfile-dev
+    image: dexlo/search:mo
     container_name: search-suggestion-service-container
     restart: always
     depends_on:
@@ -97,20 +123,26 @@ services:
       - authentication-service
       - payment-service
     environment:
-      - ACTIVE_PROFILE=${ACTIVE_PROFILE}
-      - PORT=${SEARCH_SUGGESTION_SERVICE_PORT}
-      - COMMON_DATA_SERVICE_URL=http://common-data-service:${COMMON_DATA_SERVICE_PORT}
+      - ACTIVE_PROFILE=dev
+      - PORT=10000
+      - COMMON_DATA_SERVICE_URL=http://common-data-service:9000
     expose:
       - ${SEARCH_SUGGESTION_SERVICE_PORT}
     ports:
-      - ${SEARCH_SUGGESTION_SERVICE_PORT}:${SEARCH_SUGGESTION_SERVICE_PORT}
+      - 10000:10000
     networks:
       - spring-cloud-microservices
+    configs:
+      - source: ecommerce_app_env
+        target: /app/config/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
   payment-service:
-    build:
-      context: .
-      dockerfile: ./server/payment-service/Dockerfile-dev
+    image: dexlo/payment:mo
     container_name: payment-service-container
     restart: always
     depends_on:
@@ -119,36 +151,40 @@ services:
       - react-ui
     environment:
       - DB_HOST=mysql-db
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_SCHEMA=${DB_SCHEMA}
-      - ACTIVE_PROFILE=${ACTIVE_PROFILE}
-      - PORT=${PAYMENT_SERVICE_PORT}
-    links:
-      - mysql-db:mysql
+      - DB_PORT=3306
+      - DB_USER=mysqluser
+      - DB_PASS=mypass
+      - DB_SCHEMA=ecommerce_app_database
+      - ACTIVE_PROFILE=dev
+      - PORT=9050
     expose:
       - ${PAYMENT_SERVICE_PORT}
     ports:
-      - ${PAYMENT_SERVICE_PORT}:${PAYMENT_SERVICE_PORT}
+      - 9050:9050
     networks:
       - spring-cloud-microservices
+    configs:
+      - source: ecommerce_app_env
+        target: /app/config/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
 
   react-ui:
-    build:
-      context: .
-      dockerfile: ./client/Dockerfile
+    image: dexlo/ui:mo
     container_name: react-service-container
     stdin_open: true
     restart: always
     expose:
       - ${REACT_APP_PORT}
     ports:
-      - ${REACT_APP_PORT}:${REACT_APP_PORT}
+      - 3000:3000
     environment:
       - REACT_APP_STRIPE_PUBLISH_KEY=${REACT_APP_STRIPE_PUBLISH_KEY}
-      - REACT_APP_COMMON_DATA_SERVICE_PORT=${COMMON_DATA_SERVICE_PORT}
-      - REACT_APP_ENVIRONMENT=${REACT_APP_ENVIRONMENT}
+      - REACT_APP_COMMON_DATA_SERVICE_PORT=9000
+      - REACT_APP_ENVIRONMENT=dev
     volumes:
       - ./client:/usr/src/app
       - /usr/src/app/node_modules
@@ -157,7 +193,15 @@ services:
       - redis-cache
     networks:
       - spring-cloud-microservices
-      
+    configs:
+      - source: ecommerce_app_env
+        target: /app/config/.env
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+  
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -166,7 +210,12 @@ services:
       - "9090:9090"
     networks:
       - spring-cloud-microservices
-
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+  
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -177,7 +226,12 @@ services:
       - prometheus
     networks:
       - spring-cloud-microservices
-      
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+  
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node-exporter
@@ -188,7 +242,9 @@ services:
       - /:/host:ro,rslave
     command:
       - --path.rootfs=/host
-      
+    deploy:
+      mode: global
+  
   cadvisor:
     image: google/cadvisor:latest
     container_name: cadvisor
@@ -199,11 +255,13 @@ services:
       - /sys:/sys
       - /var/lib/docker/:/var/lib/docker
     networks:
-      - spring-cloud-microservices    
-      
+      - spring-cloud-microservices
+    deploy:
+      mode: global
+
 volumes:
   grafana-storage:
-  
+
 networks:
   spring-cloud-microservices:
-    external: true
+    driver: overlay
