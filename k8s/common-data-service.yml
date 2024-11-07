@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: common-data
+  name: common-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: common-data
+  template:
+    metadata:
+      labels:
+        app: common-data
+    spec:
+      containers:
+      - image: dexlo/data:mo
+        name: common-data-container
+
+        env:
+        - name: DB_PASS
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: DB_PASS
+        - name: DB_HOST
+          value: mysql-db
+        - name: DB_PORT
+          value: 3306
+        - name: DB_USER
+          value: mysqluser
+        - name: DB_SCHEMA
+          value: ecommerce_app_database
+        - name: ACTIVE_PROFILE
+          value: dev
+        - name: PORT
+          value: 9000
+        - name: REDIS_HOST
+          value: redis-cache
+        - name: REDIS_PORT
+          value: 6379
+        - name: REDIS_PASSWORD
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: REDIS_PASSWORD
+        - name: REDIS_PASSWORD
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: REACT_CLIENT_URL
+        
+        ports:
+        - containerPort: 9000
+          name: common-data-port-deploy
+
+      volumes:
+      - name: common-data
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: common-data
+  name: common-data
+spec:
+  type: LoadBalancer
+  ports:
+  - name: "common-data-svc"
+    port: 9000
+    targetPort: 9000
+  selector:
+    app: common-data
+  

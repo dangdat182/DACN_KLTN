@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: search-suggestion
+  name: search-suggestion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-suggestion
+  template:
+    metadata:
+      labels:
+        app: search-suggestion
+    spec:
+      containers:
+      - image: dexlo/search:mo
+        name: search-suggestion-container
+
+        env:
+        - name: COMMON_DATA_SERVICE_URL
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: COMMON_DATA_SERVICE_URL
+        - name: ACTIVE_PROFILE
+          value: dev
+        - name: PORT
+          value: 10000 
+                 
+        ports:
+        - containerPort: 10000
+          name: search-suggestion-port-deploy
+
+      volumes:
+      - name: search-suggestion
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: search-suggestion
+  name: search-suggestion
+spec:
+  type: LoadBalancer
+  ports:
+  - name: "search-suggestion-svc"
+    port: 10000
+    targetPort: 10000
+  selector:
+    app: search-suggestion
+  

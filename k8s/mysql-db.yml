@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mysql-db
+  name: mysql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-db
+  template:
+    metadata:
+      labels:
+        app: mysql-db
+    spec:
+      containers:
+      - image: dexlo/mysql
+        name: mysql-db-container
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          value: ecommerce_app_database
+        - name: MYSQL_USER
+          value: mysqluser
+        - name: MYSQL_PASSWORD
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: MYSQL_PASSWORD
+        ports:
+        - containerPort: 3306
+          name: mysql-db-port-deploy
+        volumeMounts:
+        - mountPath: ./mysql-db/user.sql:/docker-entrypoint-initdb.d/user.sql
+          name: mysql-db
+      volumes:
+      - name: mysql-db
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mysql-db
+  name: mysql-db
+spec:
+  type: ClusterIP
+  ports:
+  - name: "mysql-db-svc"
+    port: 3306
+    targetPort: 3306
+  selector:
+    app: mysql-db
+  

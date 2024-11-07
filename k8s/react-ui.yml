@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecommerce-app-config
+  namespace: default
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-ui-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-ui
+  template:
+    metadata:
+      labels:
+        app: react-ui
+    spec:
+      containers:
+      - name: react-ui
+        image: dexlo/ui:mo
+        ports:
+          - containerPort: 3000
+            name: react-ui-port
+        env:
+          - name: REACT_APP_STRIPE_PUBLISH_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: ecommerce-app-config
+                key: REACT_APP_STRIPE_PUBLISH_KEY
+          - name: REACT_APP_COMMON_DATA_SERVICE_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: ecommerce-app-config
+                key: REACT_APP_COMMON_DATA_SERVICE_PORT
+          - name: REACT_APP_ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: ecommerce-app-config
+                key: REACT_APP_ENVIRONMENT
+        volumeMounts:
+          - name: client-code
+            mountPath: /usr/src/app
+          - name: node-modules
+            mountPath: /usr/src/app/node_modules
+      volumes:
+        - name: client-code
+          hostPath:
+            path: ./client
+        - name: node-modules
+          emptyDir: {}  # Kubernetes does not automatically handle `node_modules`, so this is an emptyDir
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-ui-service
+  namespace: ecommerce-app
+spec:
+  type: LoadBalancer  # Exposes the service externally
+  selector:
+    app: react-ui
+  ports:
+    - protocol: TCP
+      port: 3000           # Exposes port 3000 on the load balancer
+      targetPort: 3000     # Routes to port 3000 in the container

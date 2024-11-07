@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: authentication
+  name: authentication
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication
+  template:
+    metadata:
+      labels:
+        app: authentication
+    spec:
+      containers:
+      - image: dexlo/authentication:mo
+        name: authentication-container
+
+        env:
+        - name: DB_PASS
+          valueFrom:
+                configMapKeyRef:
+                name: ecommerce-app-config
+                key: DB_PASS
+        - name: DB_HOST
+          value: mysql-db
+        - name: DB_PORT
+          value: 3306
+        - name: DB_USER
+          value: mysqluser
+        - name: DB_SCHEMA
+          value: ecommerce_app_database
+        - name: ACTIVE_PROFILE
+          value: dev
+        - name: PORT
+          value: 7000
+        
+        ports:
+        - containerPort: 7000
+          name: authentication-port-deploy
+
+      volumes:
+      - name: authentication
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: authentication
+  name: authentication
+spec:
+  type: LoadBalancer
+  ports:
+  - name: "authentication-svc"
+    port: 7000
+    targetPort: 7000
+  selector:
+    app: authentication
+  

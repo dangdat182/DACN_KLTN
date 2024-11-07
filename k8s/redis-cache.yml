@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-cache
+  name: redis-cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-cache
+  template:
+    metadata:
+      labels:
+        app: redis-cache
+    spec:
+      containers:
+      - image: dexlo/redis
+        name: redis-cache-container
+        envFrom:
+            - configMapRef:
+                name: ecommerce-app-config
+        command: ["redis-server", "--requirepass", "mypass"]
+        ports:
+        - containerPort: 6379
+          name: redis-cache-port-deploy
+      volumes:
+      - name: redis-cache
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis-cache
+  name: redis-cache
+spec:
+  type: ClusterIP
+  ports:
+  - name: "redis-cache-svc"
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: redis-cache
+  
