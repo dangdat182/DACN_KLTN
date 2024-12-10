@@ -15,7 +15,7 @@ spec:
         app: common-data
     spec:
       containers:
-      - image: dexlo/data:mo
+      - image: dexlo/data1
         name: data-cont
 
         env:

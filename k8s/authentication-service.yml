@@ -15,7 +15,7 @@ spec:
         app: authentication
     spec:
       containers:
-      - image: dexlo/authentication:mo
+      - image: dexlo/authentication1
         name: authentication-container
 
         env:

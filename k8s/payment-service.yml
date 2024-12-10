@@ -15,7 +15,7 @@ spec:
         app: payment-service
     spec:
       containers:
-      - image: dexlo/payment:mo
+      - image: dexlo/payment1
         name: payment-cont
 
         env:

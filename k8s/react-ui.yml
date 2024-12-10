@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: react-ui
-          image: dexlo/ui:mo
+          image: dexlo/ui1
           ports:
             - containerPort: 3000
               name: react-ui-port

@@ -15,7 +15,7 @@ spec:
         app: search-suggestion
     spec:
       containers:
-      - image: dexlo/search:mo
+      - image: dexlo/search1
         name: search-cont
 
         env:
