@@ -46,7 +46,7 @@ services:
           - node.role == worker
 
   authentication-service:
-    image: dexlo/authentication:mo
+    image: dexlo/authentication1
     container_name: authentication-service-container
     restart: always
     depends_on:
@@ -77,7 +77,7 @@ services:
           - node.role == worker
 
   common-data-service:
-    image: dexlo/data:mo
+    image: dexlo/data1
     container_name: common-data-service-container
     restart: always
     depends_on:
@@ -112,7 +112,7 @@ services:
           - node.role == manager
 
   search-suggestion-service:
-    image: dexlo/search:mo
+    image: dexlo/search1
     container_name: search-suggestion-service-container
     restart: always
     depends_on:
@@ -142,7 +142,7 @@ services:
           - node.role == manager
 
   payment-service:
-    image: dexlo/payment:mo
+    image: dexlo/payment1
     container_name: payment-service-container
     restart: always
     depends_on:
@@ -173,7 +173,7 @@ services:
           - node.role == worker
 
   react-ui:
-    image: dexlo/ui:mo
+    image: dexlo/ui1
     container_name: react-service-container
     stdin_open: true
     restart: always
