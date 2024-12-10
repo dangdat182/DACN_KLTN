@@ -48,7 +48,7 @@ spec:
       volumes:
         - name: mysql-db
           hostPath:
-            path: /home/g21521926/mysql-db/user.sql  # Đảm bảo đường dẫn này đúng trên hệ thống của bạn
+            path: /home/g21521926/DACN_KLTN/mysql-db/user.sql  # Đảm bảo đường dẫn này đúng trên hệ thống của bạn
             type: File
 
 ---
