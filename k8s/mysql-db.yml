@@ -35,12 +35,21 @@ spec:
         ports:
         - containerPort: 3306
           name: mysql-port
+        # volumeMounts:
+        # - mountPath: ./mysql-db/user.sql:/docker-entrypoint-initdb.d/user.sql
+        #   name: mysql-db
         volumeMounts:
-        - mountPath: ./mysql-db/user.sql:/docker-entrypoint-initdb.d/user.sql
-          name: mysql-db
+          - mountPath: /docker-entrypoint-initdb.d/user.sql
+            name: mysql-db
+            subPath: user.sql
+      # volumes:
+      # - name: mysql-db
+      #   emptyDir: {}
       volumes:
-      - name: mysql-db
-        emptyDir: {}
+        - name: mysql-db
+          hostPath:
+            path: /home/g21521926/mysql-db/user.sql  # Đảm bảo đường dẫn này đúng trên hệ thống của bạn
+            type: File
 
 ---
 apiVersion: v1
