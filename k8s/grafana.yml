@@ -1,18 +1,3 @@
-# PersistentVolumeClaim for Grafana data storage
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: grafana-storage
-  namespace: default
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-
----
-# Deployment for Grafana
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,9 +24,8 @@ spec:
             mountPath: /var/lib/grafana
       volumes:
         - name: grafana-storage
-          persistentVolumeClaim:
-            claimName: grafana-storage
-
+          emptyDir: {}
+            
 ---
 # Service for Grafana
 apiVersion: v1

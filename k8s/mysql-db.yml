@@ -16,25 +16,25 @@ spec:
     spec:
       containers:
       - image: dexlo/mysql
-        name: mysql-db-container
+        name: mysql-db-con
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: MYSQL_ROOT_PASSWORD
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: MYSQL_ROOT_PASSWORD
         - name: MYSQL_DATABASE
           value: ecommerce_app_database
         - name: MYSQL_USER
           value: mysqluser
         - name: MYSQL_PASSWORD
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: MYSQL_PASSWORD
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: MYSQL_PASSWORD
         ports:
         - containerPort: 3306
-          name: mysql-db-port-deploy
+          name: mysql-port
         volumeMounts:
         - mountPath: ./mysql-db/user.sql:/docker-entrypoint-initdb.d/user.sql
           name: mysql-db
@@ -52,7 +52,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - name: "mysql-db-svc"
+  - name: "mysql-svc"
     port: 3306
     targetPort: 3306
   selector:

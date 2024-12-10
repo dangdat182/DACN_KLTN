@@ -21,13 +21,13 @@ spec:
         env:
         - name: DB_PASS
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: DB_PASS
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: DB_PASS
         - name: DB_HOST
           value: mysql-db
         - name: DB_PORT
-          value: 3306
+          value: "3306"
         - name: DB_USER
           value: mysqluser
         - name: DB_SCHEMA
@@ -35,11 +35,11 @@ spec:
         - name: ACTIVE_PROFILE
           value: dev
         - name: PORT
-          value: 7000
+          value: "7000"
         
         ports:
         - containerPort: 7000
-          name: authentication-port-deploy
+          name: authen-port
 
       volumes:
       - name: authentication

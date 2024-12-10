@@ -16,18 +16,18 @@ spec:
     spec:
       containers:
       - image: dexlo/data:mo
-        name: common-data-container
+        name: data-cont
 
         env:
         - name: DB_PASS
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: DB_PASS
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: DB_PASS
         - name: DB_HOST
           value: mysql-db
         - name: DB_PORT
-          value: 3306
+          value: "3306"
         - name: DB_USER
           value: mysqluser
         - name: DB_SCHEMA
@@ -35,25 +35,25 @@ spec:
         - name: ACTIVE_PROFILE
           value: dev
         - name: PORT
-          value: 9000
+          value: "9000"
         - name: REDIS_HOST
           value: redis-cache
         - name: REDIS_PORT
-          value: 6379
+          value: "6379"
         - name: REDIS_PASSWORD
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: REDIS_PASSWORD
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: REDIS_PASSWORD
         - name: REDIS_PASSWORD
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: REACT_CLIENT_URL
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: REACT_CLIENT_URL
         
         ports:
         - containerPort: 9000
-          name: common-data-port-deploy
+          name: data-port
 
       volumes:
       - name: common-data
@@ -69,7 +69,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - name: "common-data-svc"
+  - name: "data-svc"
     port: 9000
     targetPort: 9000
   selector:

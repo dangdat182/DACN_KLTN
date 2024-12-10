@@ -16,14 +16,14 @@ spec:
     spec:
       containers:
       - image: dexlo/redis
-        name: redis-cache-container
+        name: redis-cont
         envFrom:
             - configMapRef:
                 name: ecommerce-app-config
         command: ["redis-server", "--requirepass", "mypass"]
         ports:
         - containerPort: 6379
-          name: redis-cache-port-deploy
+          name: redis-port
       volumes:
       - name: redis-cache
         emptyDir: {}
@@ -38,7 +38,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - name: "redis-cache-svc"
+  - name: "redis-svc"
     port: 6379
     targetPort: 6379
   selector:

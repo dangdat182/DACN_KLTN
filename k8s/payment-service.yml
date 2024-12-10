@@ -16,18 +16,18 @@ spec:
     spec:
       containers:
       - image: dexlo/payment:mo
-        name: payment-service-container
+        name: payment-cont
 
         env:
         - name: DB_PASS
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: DB_PASS
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: DB_PASS
         - name: DB_HOST
           value: mysql-db
         - name: DB_PORT
-          value: 3306
+          value: "3306"
         - name: DB_USER
           value: mysqluser
         - name: DB_SCHEMA
@@ -35,11 +35,11 @@ spec:
         - name: ACTIVE_PROFILE
           value: dev
         - name: PORT
-          value: 9050 
+          value: "9050" 
                  
         ports:
         - containerPort: 9050
-          name: payment-service-port-deploy
+          name: payment-port
 
       volumes:
       - name: payment-service
@@ -55,7 +55,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - name: "payment-service-svc"
+  - name: "payment-svc"
     port: 9050
     targetPort: 9050
   selector:

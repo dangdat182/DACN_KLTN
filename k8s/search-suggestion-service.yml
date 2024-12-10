@@ -16,22 +16,22 @@ spec:
     spec:
       containers:
       - image: dexlo/search:mo
-        name: search-suggestion-container
+        name: search-cont
 
         env:
         - name: COMMON_DATA_SERVICE_URL
           valueFrom:
-                configMapKeyRef:
-                name: ecommerce-app-config
-                key: COMMON_DATA_SERVICE_URL
+            configMapKeyRef:
+              name: ecommerce-app-config
+              key: COMMON_DATA_SERVICE_URL
         - name: ACTIVE_PROFILE
           value: dev
         - name: PORT
-          value: 10000 
+          value: "10000"
                  
         ports:
         - containerPort: 10000
-          name: search-suggestion-port-deploy
+          name: search-port
 
       volumes:
       - name: search-suggestion
@@ -47,7 +47,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - name: "search-suggestion-svc"
+  - name: "search-svc"
     port: 10000
     targetPort: 10000
   selector:
